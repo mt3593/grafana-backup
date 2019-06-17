@@ -15,8 +15,6 @@ has_env() {
 has_env "GIT_NAME"
 has_env "GIT_EMAIL"
 ## The following are used to construct the url
-has_env "GIT_TOKEN_USERNAME"
-has_env "GIT_TOKEN"
 has_env "GIT_REPO_USERNAME"
 has_env "GIT_REPO"
 
@@ -30,12 +28,29 @@ if [ $MISSING_ENV_VARS = true ]; then
   exit 1
 fi
 
+## Check we have at least one of the auth methods
+TOKEN=false
+SSH_PATH="/root/.ssh/id_rsa"
+if [ -f "$SSH_PATH" ]; then
+  chown root:root /root/.ssh
+  touch /root/.ssh/known_hosts
+  ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts
+  GIT_URL_WITH_AUTH="git@github.com:${GIT_REPO_USERNAME}/${GIT_REPO}.git"
+else
+  $(has_env "GIT_TOKEN_USERNAME")
+  $(has_env "GIT_TOKEN")
+  if [ $MISSING_ENV_VARS = true ]; then
+    echo "Missing GIT_TOKEN and GIT_TOKEN_USERNAME or missing ~/.ssh/id_rsa file for auth."
+    exit 1
+  else
+    GIT_URL_WITH_AUTH="https://${GIT_TOKEN_USERNAME}:${GIT_TOKEN}@github.com/${GIT_REPO_USERNAME}/${GIT_REPO}.git"
+  fi
+fi
+
 echo "Pulling down repo"
 
 git config --global user.name "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
-
-GIT_URL_WITH_AUTH="https://${GIT_TOKEN_USERNAME}:${GIT_TOKEN}@github.com/${GIT_REPO_USERNAME}/${GIT_REPO}.git"
 
 cd /tmp
 git clone "$GIT_URL_WITH_AUTH"
