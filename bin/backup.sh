@@ -72,7 +72,14 @@ wizzy import dashboards
 wizzy import datasources
 
 ## Now add to git and push back up to the repo
-echo "Commiting new setup"
 git add .
-git commit -m "Backup"
-git push origin master
+if git diff-index --quiet HEAD --
+then
+  echo "Nothing to commit"
+else
+  echo "Commiting new setup"
+  git commit -m "Backup"
+  git push origin master
+fi
+
+echo "Backed up"

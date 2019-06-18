@@ -42,7 +42,7 @@ spec:
         spec:
           containers:
           - name: grafana-backup
-            image: mt3593/grafana-backup:v0.0.1
+            image: mt3593/grafana-backup:v0.0.3
             env:
               - name: GIT_NAME
                 value: "Robot"
